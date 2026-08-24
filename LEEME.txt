@@ -1,19 +1,14 @@
-PWA v3 – Porcentaje de logro, nivel y calificación
+PWA v4
 
-Cambios:
-- Dashboard reemplaza Promedio general /4 por Porcentaje de logro.
-- Nivel de logro:
-  0–39,9% = Insatisfactorio
-  40–59,9% = Por mejorar
-  60–79,9% = En proceso
-  80–100% = Adecuado
-- Calificación:
+Cambio solicitado:
+- En PLANILLA se eliminó la columna Promedio /4.
+- En su lugar se muestra CALIFICACIÓN de 1,0 a 7,0.
+- La calificación usa 60% de exigencia:
   0% = 1,0
   60% = 4,0
-  100% = 7,0
-  Exigencia = 60%
-- Historial muestra % de logro y calificación por fecha.
-- Gráfico de evolución ahora trabaja de 0% a 100%.
+  100% = 7,0.
+- Los estudiantes ausentes siguen apareciendo como AUS.
+- La exportación CSV también utiliza Calificación en lugar de Promedio.
 
-Para GitHub:
+Actualización GitHub:
 Reemplaza los archivos existentes por estos y realiza Commit changes.
