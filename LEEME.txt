@@ -1,14 +1,15 @@
-PWA v4
+PWA v2 – Modo Evaluador
+Novedades:
+- Selección de fecha y estudiante.
+- Botones grandes de nivel 1–4.
+- Opción ESTUDIANTE AUSENTE.
+- Guardado directo en la planilla de esa fecha.
+- Avance automático al siguiente estudiante.
+- Contadores de evaluados, ausentes y pendientes.
+- Planilla y Dashboard se mantienen.
 
-Cambio solicitado:
-- En PLANILLA se eliminó la columna Promedio /4.
-- En su lugar se muestra CALIFICACIÓN de 1,0 a 7,0.
-- La calificación usa 60% de exigencia:
-  0% = 1,0
-  60% = 4,0
-  100% = 7,0.
-- Los estudiantes ausentes siguen apareciendo como AUS.
-- La exportación CSV también utiliza Calificación en lugar de Promedio.
-
-Actualización GitHub:
-Reemplaza los archivos existentes por estos y realiza Commit changes.
+Para actualizar GitHub:
+1. Sube estos archivos reemplazando los anteriores.
+2. Haz Commit changes.
+3. Espera que GitHub Pages publique la nueva versión.
+4. En la tablet, cierra y vuelve a abrir la app instalada.
