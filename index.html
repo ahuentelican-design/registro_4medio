@@ -186,7 +186,7 @@ footer{text-align:center;padding:18px;font-size:.72rem;color:#6b7280}
             <th>5. MATERIALES<div class="help">4: usa, cuida, ordena y devuelve correctamente.</div></th>
             <th>6. SEGURIDAD<div class="help">4: respeta normas y ejecuta con técnica segura.</div></th>
             <th>7. AUTONOMÍA<div class="help">4: gestiona tiempos, descansos, cargas y ajustes.</div></th>
-            <th>Total /28</th><th>Prom. /4</th><th>Resultados / observaciones</th>
+            <th>Total /28</th><th>Calificación</th><th>Resultados / observaciones</th>
           </tr>
         </thead>
         <tbody id="evalBody"></tbody>
@@ -349,7 +349,7 @@ function renderEval(){
     const tr=document.createElement("tr");
     tr.innerHTML=`<td>${i+1}</td><td class="name">${s}</td>`+
       r.scores.map((v,j)=>`<td><select class="score" data-student="${encodeURIComponent(s)}" data-index="${j}" data-v="${v||""}">${scoreSelect(v)}</select></td>`).join("")+
-      `<td class="total">${r.absent?"AUS":(c.count?c.total:"")}</td><td class="avg">${r.absent?"AUS":(c.avg!=null?c.avg.toFixed(2):"")}</td>
+      `<td class="total">${r.absent?"AUS":(c.count?c.total:"")}</td><td class="avg">${r.absent?"AUS":(gradeFromPercent(achievementPercent(r.scores))!=null?gradeFromPercent(achievementPercent(r.scores)).toFixed(1):"")}</td>
        <td class="obs"><textarea data-obs="${encodeURIComponent(s)}">${r.obs||""}</textarea></td>`;
     body.appendChild(tr);
   });
@@ -359,7 +359,7 @@ function renderEval(){
     e.target.dataset.v=e.target.value;
     const row=e.target.closest("tr"), c=calc(db[d].students[s].scores);
     row.querySelector(".total").textContent=c.count?c.total:"";
-    row.querySelector(".avg").textContent=c.avg!=null?c.avg.toFixed(2):"";
+    row.querySelector(".avg").textContent=gradeFromPercent(achievementPercent(r.scores))!=null?gradeFromPercent(achievementPercent(r.scores)).toFixed(1):"";
   }));
   document.querySelectorAll("[data-obs]").forEach(el=>el.addEventListener("input",e=>{
     const s=decodeURIComponent(e.target.dataset.obs); db[d].students[s].obs=e.target.value;
@@ -384,8 +384,8 @@ function renderPills(){
   });
 }
 function exportCSV(){
-  const d=dateSelect.value, rows=[["N°","Estudiante",...indicators,"Total","Promedio","Observaciones"]];
-  students.forEach((s,i)=>{const r=db[d].students[s],c=calc(r.scores);rows.push([i+1,s,...r.scores,c.count?c.total:"",c.avg!=null?c.avg.toFixed(2):"",r.obs])});
+  const d=dateSelect.value, rows=[["N°","Estudiante",...indicators,"Total","Calificación","Observaciones"]];
+  students.forEach((s,i)=>{const r=db[d].students[s],c=calc(r.scores);rows.push([i+1,s,...r.scores,c.count?c.total:"",gradeFromPercent(achievementPercent(r.scores))!=null?gradeFromPercent(achievementPercent(r.scores)).toFixed(1):"",r.obs])});
   const csv=rows.map(r=>r.map(x=>`"${String(x??"").replaceAll('"','""')}"`).join(";")).join("\n");
   const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"}),a=document.createElement("a");
   a.href=URL.createObjectURL(blob);a.download=`evaluacion_${d}.csv`;a.click();URL.revokeObjectURL(a.href);
