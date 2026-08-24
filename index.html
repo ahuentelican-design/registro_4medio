@@ -95,6 +95,17 @@ footer{text-align:center;padding:18px;font-size:.72rem;color:#6b7280}
   textarea,select{border:0;padding:0}
   @page{size:legal landscape;margin:8mm}
 }
+
+.quick-indicator{border:1px solid var(--borde);border-radius:12px;padding:14px;background:#fafcff}
+.quick-indicator h3{margin:0 0 6px;font-size:.95rem;color:var(--azul)}
+.quick-levels{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.level-btn{min-height:54px;border:1px solid #cfd7e3;background:#fff;color:#26364a;font-weight:800;font-size:1rem}
+.level-btn.selected[data-level="4"]{background:var(--verde)}
+.level-btn.selected[data-level="3"]{background:var(--amarillo)}
+.level-btn.selected[data-level="2"]{background:var(--naranjo)}
+.level-btn.selected[data-level="1"]{background:var(--rojo)}
+#absentBtn.active{background:#8b1e1e;color:#fff}
+@media(max-width:700px){.quick-levels{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
@@ -104,14 +115,47 @@ footer{text-align:center;padding:18px;font-size:.72rem;color:#6b7280}
     <p>Escala de apreciación acumulativa · Lunes y viernes · 24/08/2026 al 02/10/2026</p>
   </div>
   <nav>
-    <button class="navbtn active" data-panel="evaluationPanel">Evaluación</button>
+    <button class="navbtn active" data-panel="evaluatorPanel">Evaluador</button>
+<button class="navbtn" data-panel="evaluationPanel">Planilla</button>
     <button class="navbtn" data-panel="dashboardPanel">Dashboard</button>
     <button class="navbtn" data-panel="configPanel">Criterios</button><button class="navbtn" id="installAppBtn" hidden type="button">Instalar app</button>
   </nav>
 </header>
 
 <main>
-<section id="evaluationPanel" class="panel active">
+
+<section id="evaluatorPanel" class="panel active">
+  <div class="card">
+    <div class="toolbar">
+      <div class="field"><label>Fecha</label><select id="evalDateSelect"></select></div>
+      <div class="field" style="flex:1;min-width:320px"><label>Estudiante</label><select id="evalStudentSelect"></select></div>
+      <div class="field"><label>Estado</label><button type="button" id="absentBtn" class="secondary">Marcar ausente</button></div>
+    </div>
+    <div class="metrics">
+      <div class="metric"><span>Evaluados</span><b id="evalCount">0</b></div>
+      <div class="metric"><span>Ausentes</span><b id="absentCount">0</b></div>
+      <div class="metric"><span>Pendientes</span><b id="pendingCount">0</b></div>
+      <div class="metric"><span>Estado actual</span><b id="studentStatus" style="font-size:1rem">Pendiente</b></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">Registro rápido de evaluación</h2>
+    <p class="small">Selecciona un nivel de logro para cada indicador. Si el estudiante no asistió, usa “Marcar ausente”.</p>
+    <div id="quickIndicators" class="criteria"></div>
+    <div class="field" style="margin-top:16px">
+      <label>Resultados / observaciones</label>
+      <textarea id="quickObs" rows="4" placeholder="Ej.: trabajó al 75% RM, mejoró técnica, requiere reforzar seguridad..."></textarea>
+    </div>
+    <div class="toolbar" style="margin-top:16px">
+      <button type="button" class="primary" id="quickSaveBtn">Guardar evaluación</button>
+      <button type="button" class="secondary" id="quickClearBtn">Limpiar formulario</button>
+      <span class="small" id="quickMessage" aria-live="polite"></span>
+    </div>
+  </div>
+</section>
+
+<section id="evaluationPanel" class="panel">
   <div class="card">
     <div class="toolbar">
       <div class="field">
@@ -265,11 +309,11 @@ function renderEval(){
   document.getElementById("sessionFocus").value=db[d].focus||"";
   const body=document.getElementById("evalBody"); body.innerHTML="";
   students.forEach((s,i)=>{
-    const r=db[d].students[s]; const c=calc(r.scores);
+    const r=ensureStudentRecord(d,s); const c=calc(r.scores);
     const tr=document.createElement("tr");
     tr.innerHTML=`<td>${i+1}</td><td class="name">${s}</td>`+
       r.scores.map((v,j)=>`<td><select class="score" data-student="${encodeURIComponent(s)}" data-index="${j}" data-v="${v||""}">${scoreSelect(v)}</select></td>`).join("")+
-      `<td class="total">${c.count?c.total:""}</td><td class="avg">${c.avg!=null?c.avg.toFixed(2):""}</td>
+      `<td class="total">${r.absent?"AUS":(c.count?c.total:"")}</td><td class="avg">${r.absent?"AUS":(c.avg!=null?c.avg.toFixed(2):"")}</td>
        <td class="obs"><textarea data-obs="${encodeURIComponent(s)}">${r.obs||""}</textarea></td>`;
     body.appendChild(tr);
   });
@@ -315,8 +359,8 @@ document.getElementById("exportBtn").onclick=exportCSV;
 function avg(arr){const v=arr.filter(x=>x!=null&&!isNaN(x));return v.length?v.reduce((a,b)=>a+b,0)/v.length:null}
 function dashboard(){
   const s=studentSelect.value;
-  const perDate=dates.map(d=>{const r=db[d].students[s],c=calc(r.scores);return {d,r,c}});
-  const evaluated=perDate.filter(x=>x.c.count);
+  const perDate=dates.map(d=>{const r=ensureStudentRecord(d,s),c=calc(r.scores);return {d,r,c}});
+  const evaluated=perDate.filter(x=>x.c.count && !x.r.absent);
   document.getElementById("mSessions").textContent=evaluated.length;
   document.getElementById("mAverage").textContent=evaluated.length?avg(evaluated.map(x=>x.c.avg)).toFixed(2):"–";
   const inds=indicators.map((name,j)=>({name,val:avg(evaluated.map(x=>{const v=Number(x.r.scores[j]);return v||null}))}));
@@ -326,7 +370,7 @@ function dashboard(){
   const hb=document.getElementById("historyBody");hb.innerHTML="";
   perDate.forEach(x=>{
     const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${fmtDate(x.d)}</td><td>${x.c.avg!=null?x.c.avg.toFixed(2):""}</td>`+
+    tr.innerHTML=`<td>${fmtDate(x.d)}</td><td>${x.r.absent?"AUSENTE":(x.c.avg!=null?x.c.avg.toFixed(2):"")}</td>`+
       x.r.scores.map(v=>`<td>${v||""}</td>`).join("")+`<td style="text-align:left">${x.r.obs||""}</td>`;
     hb.appendChild(tr);
   });
@@ -372,7 +416,105 @@ document.getElementById("clearBtn").onclick=()=>{
   }
 };
 
-dateSelect.value=dates[0];studentSelect.value=students[0];renderEval();
+
+const evalDateSelect=document.getElementById("evalDateSelect");
+const evalStudentSelect=document.getElementById("evalStudentSelect");
+dates.forEach(d=>evalDateSelect.add(new Option(fmtDate(d),d)));
+students.forEach(s=>evalStudentSelect.add(new Option(s,s)));
+
+function ensureStudentRecord(date,student){
+  ensureDate(date);
+  const r=db[date].students[student];
+  if(typeof r.absent==="undefined") r.absent=false;
+  return r;
+}
+dates.forEach(d=>students.forEach(s=>ensureStudentRecord(d,s)));
+
+let quickScores=["","","","","","",""];
+
+function renderQuickIndicators(){
+  const box=document.getElementById("quickIndicators");
+  box.innerHTML="";
+  criteria.forEach((c,i)=>{
+    const div=document.createElement("div");
+    div.className="quick-indicator";
+    div.innerHTML=`<h3>${i+1}. ${c[0]}</h3><div class="small">${c[1]}</div>
+      <div class="quick-levels">
+        ${[1,2,3,4].map(v=>`<button type="button" class="level-btn ${String(quickScores[i])===String(v)?"selected":""}" data-qindex="${i}" data-level="${v}">${v}</button>`).join("")}
+      </div>`;
+    box.appendChild(div);
+  });
+  box.querySelectorAll(".level-btn").forEach(btn=>btn.addEventListener("click",()=>{
+    quickScores[+btn.dataset.qindex]=btn.dataset.level;
+    renderQuickIndicators();
+  }));
+}
+
+function updateQuickStats(){
+  const d=evalDateSelect.value||dates[0];
+  let evaluated=0, absent=0;
+  students.forEach(s=>{
+    const r=ensureStudentRecord(d,s);
+    if(r.absent) absent++;
+    else if(calc(r.scores).count) evaluated++;
+  });
+  document.getElementById("evalCount").textContent=evaluated;
+  document.getElementById("absentCount").textContent=absent;
+  document.getElementById("pendingCount").textContent=students.length-evaluated-absent;
+}
+
+function loadQuickStudent(){
+  const d=evalDateSelect.value||dates[0], s=evalStudentSelect.value||students[0];
+  const r=ensureStudentRecord(d,s);
+  quickScores=[...r.scores];
+  document.getElementById("quickObs").value=r.absent?"":(r.obs||"");
+  document.getElementById("absentBtn").classList.toggle("active",!!r.absent);
+  document.getElementById("absentBtn").textContent=r.absent?"Ausente ✓":"Marcar ausente";
+  document.getElementById("studentStatus").textContent=r.absent?"Ausente":(calc(r.scores).count?"Evaluado":"Pendiente");
+  renderQuickIndicators();
+  updateQuickStats();
+}
+
+document.getElementById("absentBtn").addEventListener("click",()=>{
+  const r=ensureStudentRecord(evalDateSelect.value,evalStudentSelect.value);
+  r.absent=!r.absent;
+  if(r.absent){quickScores=["","","","","","",""]; document.getElementById("quickObs").value="";}
+  loadQuickStudent();
+});
+
+document.getElementById("quickClearBtn").addEventListener("click",()=>{
+  quickScores=["","","","","","",""];
+  document.getElementById("quickObs").value="";
+  const r=ensureStudentRecord(evalDateSelect.value,evalStudentSelect.value);
+  r.absent=false;
+  renderQuickIndicators();
+  loadQuickStudent();
+});
+
+evalDateSelect.addEventListener("change",loadQuickStudent);
+evalStudentSelect.addEventListener("change",loadQuickStudent);
+
+document.getElementById("quickSaveBtn").addEventListener("click",()=>{
+  const d=evalDateSelect.value,s=evalStudentSelect.value,r=ensureStudentRecord(d,s);
+  if(!r.absent && quickScores.filter(Boolean).length===0){
+    document.getElementById("quickMessage").textContent="Selecciona al menos un indicador o marca Ausente.";
+    return;
+  }
+  r.scores=r.absent?["","","","","","",""]:[...quickScores];
+  r.obs=r.absent?"AUSENTE":document.getElementById("quickObs").value.trim();
+  localStorage.setItem(key,JSON.stringify(db));
+  document.getElementById("quickMessage").textContent=r.absent?"Ausencia guardada.":"Evaluación guardada.";
+  updateQuickStats();
+
+  const idx=students.indexOf(s);
+  if(idx<students.length-1){
+    evalStudentSelect.value=students[idx+1];
+    loadQuickStudent();
+  }
+  renderEval();
+});
+
+dateSelect.value=dates[0];studentSelect.value=students[0];evalDateSelect.value=dates[0];evalStudentSelect.value=students[0];renderEval();loadQuickStudent();
 </script>
 
 <script>

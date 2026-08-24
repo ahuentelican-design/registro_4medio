@@ -1,20 +1,15 @@
-REGISTRO 4° MEDIO – APP PWA PARA ANDROID
+PWA v2 – Modo Evaluador
+Novedades:
+- Selección de fecha y estudiante.
+- Botones grandes de nivel 1–4.
+- Opción ESTUDIANTE AUSENTE.
+- Guardado directo en la planilla de esa fecha.
+- Avance automático al siguiente estudiante.
+- Contadores de evaluados, ausentes y pendientes.
+- Planilla y Dashboard se mantienen.
 
-Contenido:
-- index.html: aplicación.
-- manifest.webmanifest: configuración de instalación.
-- sw.js: funcionamiento sin conexión.
-- icon.svg: icono de la aplicación.
-
-IMPORTANTE:
-Para que Android muestre la opción “Instalar app”, estos archivos deben estar publicados
-en un servidor web HTTPS. Abrir index.html directamente desde la carpeta de descargas
-permite usar la página, pero no activar correctamente el modo PWA/offline.
-
-Instalación en Galaxy Tab S6 FE:
-1. Publicar esta carpeta en un hosting HTTPS (GitHub Pages, Netlify, Firebase Hosting, etc.).
-2. Abrir la URL en Google Chrome de la tablet.
-3. Menú ⋮ > Instalar app / Añadir a pantalla principal.
-4. Abrir desde el icono “Registro 4°M”.
-
-Los datos se almacenan localmente en el navegador de ese dispositivo.
+Para actualizar GitHub:
+1. Sube estos archivos reemplazando los anteriores.
+2. Haz Commit changes.
+3. Espera que GitHub Pages publique la nueva versión.
+4. En la tablet, cierra y vuelve a abrir la app instalada.
