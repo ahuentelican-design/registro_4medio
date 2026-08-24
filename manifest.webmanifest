@@ -1,0 +1,19 @@
+{
+  "name": "Registro de Sesiones 4° Medio",
+  "short_name": "Registro 4°M",
+  "description": "Evaluación y seguimiento de sesiones de entrenamiento de 4° Medio.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f7fb",
+  "theme_color": "#1f4e78",
+  "orientation": "landscape",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

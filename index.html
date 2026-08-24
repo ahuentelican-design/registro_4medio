@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro 4° Medio - Sesiones de Entrenamiento</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1f4e78">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
+:root{
+  --azul:#1f4e78; --azul2:#2f75b5; --azulclaro:#d9eaf7; --fondo:#f4f7fb;
+  --borde:#d8dee8; --texto:#1f2937; --verde:#d9ead3; --amarillo:#fff2cc;
+  --naranjo:#fce5cd; --rojo:#f4cccc; --blanco:#fff;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Montserrat",Arial,sans-serif;background:var(--fondo);color:var(--texto)}
+header{
+  background:linear-gradient(135deg,var(--azul),#14324f); color:#fff; padding:22px 28px;
+  display:flex; align-items:center; justify-content:space-between; gap:18px; flex-wrap:wrap;
+  box-shadow:0 4px 18px rgba(0,0,0,.12)
+}
+header h1{margin:0;font-size:1.35rem;font-weight:800}
+header p{margin:5px 0 0;font-size:.88rem;opacity:.9}
+nav{display:flex;gap:8px;flex-wrap:wrap}
+button,.btn{
+  border:0;border-radius:9px;padding:10px 14px;font:600 .85rem Montserrat;cursor:pointer;
+  transition:.15s ease
+}
+button:hover{transform:translateY(-1px)}
+.navbtn{background:rgba(255,255,255,.13);color:#fff}
+.navbtn.active{background:#fff;color:var(--azul)}
+main{max-width:1600px;margin:0 auto;padding:22px}
+.panel{display:none}.panel.active{display:block}
+.card{
+  background:#fff;border:1px solid var(--borde);border-radius:14px;padding:18px;
+  box-shadow:0 3px 12px rgba(24,39,75,.06);margin-bottom:18px
+}
+.toolbar{display:flex;align-items:end;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+label{font-weight:700;font-size:.78rem;color:#455468}
+select,input,textarea{
+  border:1px solid #cfd7e3;border-radius:8px;padding:9px 10px;font:500 .85rem Montserrat;background:#fff
+}
+select:focus,input:focus,textarea:focus{outline:2px solid #9fc5e8;border-color:var(--azul2)}
+.primary{background:var(--azul);color:#fff}
+.secondary{background:#e8eef5;color:#234}
+.danger{background:#8b1e1e;color:#fff}
+.tablewrap{overflow:auto;border-radius:10px;border:1px solid var(--borde)}
+table{border-collapse:collapse;width:100%;min-width:1260px;background:white}
+th,td{border-bottom:1px solid #e5e9ef;border-right:1px solid #edf0f4;padding:8px;text-align:center;font-size:.76rem;vertical-align:middle}
+th{background:var(--azulclaro);font-weight:800;position:sticky;top:0;z-index:1}
+td.name{text-align:left;font-weight:600;min-width:250px}
+td.obs textarea{min-width:250px;width:100%;height:48px;resize:vertical}
+.score{
+  width:62px;text-align:center;font-weight:800;border-radius:7px;padding:7px
+}
+.score[data-v="4"]{background:var(--verde)}
+.score[data-v="3"]{background:var(--amarillo)}
+.score[data-v="2"]{background:var(--naranjo)}
+.score[data-v="1"]{background:var(--rojo)}
+.help{font-size:.68rem;color:#58677a;line-height:1.3;margin-top:3px;font-weight:500}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:950px){.grid2{grid-template-columns:1fr}}
+.metric{
+  border:1px solid var(--borde);background:#fafcff;border-radius:12px;padding:14px;text-align:center
+}
+.metric b{display:block;font-size:1.55rem;color:var(--azul);margin-top:4px}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:14px 0}
+@media(max-width:850px){.metrics{grid-template-columns:repeat(2,1fr)}}
+canvas{width:100%;height:320px;border-radius:10px;background:#fff}
+.legend{font-size:.75rem;color:#5f6b7a;margin-top:10px}
+.criteria{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(max-width:900px){.criteria{grid-template-columns:1fr}}
+.criterion{border-left:5px solid var(--azul2);background:#f7fbff;padding:12px 14px;border-radius:8px}
+.criterion b{color:var(--azul)}
+.small{font-size:.75rem;color:#667085}
+.badge{display:inline-block;background:#eef4fa;color:var(--azul);border-radius:999px;padding:5px 9px;font-weight:700;font-size:.72rem}
+.dateList{display:flex;gap:7px;flex-wrap:wrap}
+.datepill{padding:7px 10px;background:#eef3f8;border-radius:999px;font-size:.74rem;font-weight:700;cursor:pointer}
+.datepill.active{background:var(--azul);color:white}
+footer{text-align:center;padding:18px;font-size:.72rem;color:#6b7280}
+@media print{
+  header nav,.no-print,#dashboardPanel,#configPanel{display:none!important}
+  body{background:white}
+  main{max-width:none;padding:0}
+  .card{box-shadow:none;border:0;padding:0}
+  .tablewrap{overflow:visible;border:0}
+  table{min-width:0;font-size:7pt}
+  th,td{font-size:6.5pt;padding:3px}
+  textarea,select{border:0;padding:0}
+  @page{size:legal landscape;margin:8mm}
+}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Registro de Sesiones de Entrenamiento · 4° Medio</h1>
+    <p>Escala de apreciación acumulativa · Lunes y viernes · 24/08/2026 al 02/10/2026</p>
+  </div>
+  <nav>
+    <button class="navbtn active" data-panel="evaluationPanel">Evaluación</button>
+    <button class="navbtn" data-panel="dashboardPanel">Dashboard</button>
+    <button class="navbtn" data-panel="configPanel">Criterios</button><button class="navbtn" id="installAppBtn" hidden type="button">Instalar app</button>
+  </nav>
+</header>
+
+<main>
+<section id="evaluationPanel" class="panel active">
+  <div class="card">
+    <div class="toolbar">
+      <div class="field">
+        <label>Fecha de evaluación</label>
+        <select id="dateSelect"></select>
+      </div>
+      <div class="field" style="flex:1;min-width:280px">
+        <label>Objetivo / foco de la sesión</label>
+        <input id="sessionFocus" placeholder="Ej.: fuerza tren inferior, trabajo al 75% RM, control de FC...">
+      </div>
+      <button class="primary no-print" id="saveBtn">Guardar cambios</button>
+      <button class="secondary no-print" onclick="window.print()">Imprimir</button>
+      <button class="secondary no-print" id="exportBtn">Exportar CSV</button>
+    </div>
+    <div class="dateList" id="datePills"></div>
+  </div>
+
+  <div class="card">
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>N°</th><th>Estudiante</th>
+            <th>1. REGISTRO<div class="help">4: registra avances y resultados completos y comparables.</div></th>
+            <th>2. SESIÓN<div class="help">4: ejecuta completamente lo planificado.</div></th>
+            <th>3. CARGA / INTENSIDAD<div class="help">4: aplica y registra %RM, FC, RPE/RIR u otro marcador.</div></th>
+            <th>4. VESTIMENTA<div class="help">4: usa ropa y calzado deportivo apropiados.</div></th>
+            <th>5. MATERIALES<div class="help">4: usa, cuida, ordena y devuelve correctamente.</div></th>
+            <th>6. SEGURIDAD<div class="help">4: respeta normas y ejecuta con técnica segura.</div></th>
+            <th>7. AUTONOMÍA<div class="help">4: gestiona tiempos, descansos, cargas y ajustes.</div></th>
+            <th>Total /28</th><th>Prom. /4</th><th>Resultados / observaciones</th>
+          </tr>
+        </thead>
+        <tbody id="evalBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="dashboardPanel" class="panel">
+  <div class="card">
+    <div class="toolbar">
+      <div class="field" style="min-width:340px">
+        <label>Estudiante</label>
+        <select id="studentSelect"></select>
+      </div>
+    </div>
+    <div class="metrics">
+      <div class="metric"><span>Sesiones evaluadas</span><b id="mSessions">0</b></div>
+      <div class="metric"><span>Promedio general /4</span><b id="mAverage">–</b></div>
+      <div class="metric"><span>Mejor indicador</span><b id="mBest" style="font-size:1rem">–</b></div>
+      <div class="metric"><span>Indicador a reforzar</span><b id="mWeak" style="font-size:1rem">–</b></div>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <h3>Nivel de logro promedio por indicador</h3>
+      <canvas id="barChart" width="760" height="340"></canvas>
+      <div class="legend">Escala: 1 Inicial · 2 En desarrollo · 3 Logrado · 4 Destacado</div>
+    </div>
+    <div class="card">
+      <h3>Evolución del promedio por fecha</h3>
+      <canvas id="lineChart" width="760" height="340"></canvas>
+      <div class="legend">El gráfico considera solo las sesiones que poseen al menos un indicador evaluado.</div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Historial del estudiante</h3>
+    <div class="tablewrap">
+      <table style="min-width:900px">
+        <thead><tr><th>Fecha</th><th>Promedio</th><th>Registro</th><th>Sesión</th><th>Carga</th><th>Vestimenta</th><th>Materiales</th><th>Seguridad</th><th>Autonomía</th><th>Observaciones</th></tr></thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="configPanel" class="panel">
+  <div class="card">
+    <h2>Criterios para obtener 4 puntos</h2>
+    <p class="small">Estos criterios corresponden al nivel máximo de logro esperado en cada indicador.</p>
+    <div class="criteria" id="criteriaBox"></div>
+  </div>
+  <div class="card">
+    <h3>Escala de apreciación</h3>
+    <p><span class="badge">4 · Destacado</span> Cumple de forma autónoma, consistente y precisa.</p>
+    <p><span class="badge">3 · Logrado</span> Cumple adecuadamente; requiere apoyos mínimos.</p>
+    <p><span class="badge">2 · En desarrollo</span> Cumple parcialmente o de forma irregular; requiere orientación.</p>
+    <p><span class="badge">1 · Inicial</span> No evidencia el indicador o requiere apoyo constante.</p>
+    <button class="danger no-print" id="clearBtn">Borrar todos los datos guardados</button>
+  </div>
+</section>
+</main>
+
+<footer>Los datos se guardan localmente en este navegador mediante localStorage.</footer>
+
+<script>
+const students = [
+"Alvarado Elgueta Diego Alonso","Arjel Guerra José Ignacio Benjamín","Asencio Soto Benjamín Ignacio",
+"Azócar Villarroel Sofía Soledad","Barría Vargas Gabriel Isaac","Barrientos Aro Benjamín Nicolás",
+"Barrientos Oyarzo Francisca Ignacia","Bustamante Urzúa Thomás Ignacio","Calfunao Rodríguez Enileyn Shanttal",
+"Grandón Fuentes Sebastián Alexis","Cancino Riaño Daniela Anaís","Díaz Paredes Vicente Alonso",
+"Esparza Gómez Alonso Javier","Gutiérrez Acuña Vicente Alfredo","Igor Ponce Derek Moisés",
+"Krause Subiabre Cristóbal Ignacio","Levín Marileo Valentina Alejandra","Manqueo Manqueo Rafaela Dominga",
+"Melipil Águila Benjamín Andrés","Ojeda Azocar Josefina Javiera","Ortega Vidal Fernanda Isabel",
+"Schwerter Mella Didier Aaron","Sepúlveda Retamal Julieth Niscerele","Torres Maldonado Vicente Antonio",
+"Valdés Merino Matías Benjamín","Vargas Schnabel Rafael Ignacio","Vera Velásquez Lucas Germán",
+"Vidal Sáez Martín Ignacio","Navarro Campos Fernanda Andrea"
+];
+const dates=["2026-08-24","2026-08-28","2026-08-31","2026-09-04","2026-09-07","2026-09-11","2026-09-14","2026-09-18","2026-09-21","2026-09-25","2026-09-28","2026-10-02"];
+const indicators=["Registro","Sesión","Carga / Intensidad","Vestimenta","Materiales","Seguridad","Autonomía"];
+const criteria=[
+["Registro","Registra de forma completa y ordenada los avances y resultados de la sesión, permitiendo comparar su progreso."],
+["Sesión","Realiza completamente la sesión planificada, respetando ejercicios, series, repeticiones y/o tiempos definidos."],
+["Carga / Intensidad","Aplica y registra correctamente un marcador objetivo de carga o intensidad: %RM, pulsaciones/FC, RPE/RIR, tiempo, velocidad u otro pertinente."],
+["Vestimenta","Utiliza vestimenta y calzado deportivo apropiados durante toda la sesión, favoreciendo seguridad e higiene."],
+["Materiales","Utiliza los materiales correctamente, los cuida, mantiene el orden y los devuelve a su lugar."],
+["Seguridad","Respeta las normas de seguridad, controla el espacio de trabajo y ejecuta los ejercicios con técnica segura."],
+["Autonomía","Gestiona de manera autónoma tiempos, descansos, cargas y ajustes coherentes con su objetivo personal."]
+];
+
+const key="registro4medio_v1";
+let db=JSON.parse(localStorage.getItem(key)||"{}");
+function ensureDate(date){
+  db[date] ||= {focus:"",students:{}};
+  students.forEach(s=>db[date].students[s] ||= {scores:["","","","","","",""],obs:""});
+}
+dates.forEach(ensureDate);
+
+const fmtDate=s=>{
+  const [y,m,d]=s.split("-");
+  return `${d}-${m}-${y}`;
+};
+
+const dateSelect=document.getElementById("dateSelect");
+const studentSelect=document.getElementById("studentSelect");
+dates.forEach(d=>dateSelect.add(new Option(fmtDate(d),d)));
+students.forEach(s=>studentSelect.add(new Option(s,s)));
+
+function scoreSelect(value){
+  let opts='<option value=""></option>';
+  [4,3,2,1].forEach(v=>opts+=`<option value="${v}" ${String(value)===String(v)?"selected":""}>${v}</option>`);
+  return opts;
+}
+function calc(scores){
+  const vals=scores.map(Number).filter(v=>v>=1&&v<=4);
+  return {total:vals.reduce((a,b)=>a+b,0), avg:vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:null, count:vals.length};
+}
+function renderEval(){
+  const d=dateSelect.value||dates[0]; ensureDate(d);
+  document.getElementById("sessionFocus").value=db[d].focus||"";
+  const body=document.getElementById("evalBody"); body.innerHTML="";
+  students.forEach((s,i)=>{
+    const r=db[d].students[s]; const c=calc(r.scores);
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${i+1}</td><td class="name">${s}</td>`+
+      r.scores.map((v,j)=>`<td><select class="score" data-student="${encodeURIComponent(s)}" data-index="${j}" data-v="${v||""}">${scoreSelect(v)}</select></td>`).join("")+
+      `<td class="total">${c.count?c.total:""}</td><td class="avg">${c.avg!=null?c.avg.toFixed(2):""}</td>
+       <td class="obs"><textarea data-obs="${encodeURIComponent(s)}">${r.obs||""}</textarea></td>`;
+    body.appendChild(tr);
+  });
+  document.querySelectorAll(".score").forEach(el=>el.addEventListener("change",e=>{
+    const s=decodeURIComponent(e.target.dataset.student), j=+e.target.dataset.index;
+    db[d].students[s].scores[j]=e.target.value;
+    e.target.dataset.v=e.target.value;
+    const row=e.target.closest("tr"), c=calc(db[d].students[s].scores);
+    row.querySelector(".total").textContent=c.count?c.total:"";
+    row.querySelector(".avg").textContent=c.avg!=null?c.avg.toFixed(2):"";
+  }));
+  document.querySelectorAll("[data-obs]").forEach(el=>el.addEventListener("input",e=>{
+    const s=decodeURIComponent(e.target.dataset.obs); db[d].students[s].obs=e.target.value;
+  }));
+  renderPills();
+}
+function save(){
+  const d=dateSelect.value; db[d].focus=document.getElementById("sessionFocus").value;
+  localStorage.setItem(key,JSON.stringify(db));
+  const b=document.getElementById("saveBtn"), old=b.textContent; b.textContent="Guardado ✓";
+  setTimeout(()=>b.textContent=old,1000);
+}
+document.getElementById("saveBtn").onclick=save;
+document.getElementById("sessionFocus").addEventListener("input",()=>db[dateSelect.value].focus=document.getElementById("sessionFocus").value);
+dateSelect.onchange=renderEval;
+
+function renderPills(){
+  const box=document.getElementById("datePills"); box.innerHTML="";
+  dates.forEach(d=>{
+    const e=document.createElement("span"); e.className="datepill"+(d===dateSelect.value?" active":""); e.textContent=fmtDate(d);
+    e.onclick=()=>{dateSelect.value=d;renderEval()}; box.appendChild(e);
+  });
+}
+function exportCSV(){
+  const d=dateSelect.value, rows=[["N°","Estudiante",...indicators,"Total","Promedio","Observaciones"]];
+  students.forEach((s,i)=>{const r=db[d].students[s],c=calc(r.scores);rows.push([i+1,s,...r.scores,c.count?c.total:"",c.avg!=null?c.avg.toFixed(2):"",r.obs])});
+  const csv=rows.map(r=>r.map(x=>`"${String(x??"").replaceAll('"','""')}"`).join(";")).join("\n");
+  const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"}),a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);a.download=`evaluacion_${d}.csv`;a.click();URL.revokeObjectURL(a.href);
+}
+document.getElementById("exportBtn").onclick=exportCSV;
+
+function avg(arr){const v=arr.filter(x=>x!=null&&!isNaN(x));return v.length?v.reduce((a,b)=>a+b,0)/v.length:null}
+function dashboard(){
+  const s=studentSelect.value;
+  const perDate=dates.map(d=>{const r=db[d].students[s],c=calc(r.scores);return {d,r,c}});
+  const evaluated=perDate.filter(x=>x.c.count);
+  document.getElementById("mSessions").textContent=evaluated.length;
+  document.getElementById("mAverage").textContent=evaluated.length?avg(evaluated.map(x=>x.c.avg)).toFixed(2):"–";
+  const inds=indicators.map((name,j)=>({name,val:avg(evaluated.map(x=>{const v=Number(x.r.scores[j]);return v||null}))}));
+  const valid=inds.filter(x=>x.val!=null);
+  document.getElementById("mBest").textContent=valid.length?valid.reduce((a,b)=>a.val>=b.val?a:b).name:"–";
+  document.getElementById("mWeak").textContent=valid.length?valid.reduce((a,b)=>a.val<=b.val?a:b).name:"–";
+  const hb=document.getElementById("historyBody");hb.innerHTML="";
+  perDate.forEach(x=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${fmtDate(x.d)}</td><td>${x.c.avg!=null?x.c.avg.toFixed(2):""}</td>`+
+      x.r.scores.map(v=>`<td>${v||""}</td>`).join("")+`<td style="text-align:left">${x.r.obs||""}</td>`;
+    hb.appendChild(tr);
+  });
+  drawBar(inds);
+  drawLine(evaluated.map(x=>({label:fmtDate(x.d).slice(0,5),value:x.c.avg})));
+}
+studentSelect.onchange=dashboard;
+
+function prepCanvas(id){
+  const c=document.getElementById(id),ctx=c.getContext("2d");ctx.clearRect(0,0,c.width,c.height);return [c,ctx];
+}
+function drawBar(data){
+  const [c,ctx]=prepCanvas("barChart"), pad=45,w=c.width-pad*2,h=c.height-pad*2;
+  ctx.font="12px Montserrat";ctx.fillStyle="#536174";ctx.strokeStyle="#dfe5ec";ctx.lineWidth=1;
+  for(let y=1;y<=4;y++){const py=pad+h-(y/4)*h;ctx.beginPath();ctx.moveTo(pad,py);ctx.lineTo(pad+w,py);ctx.stroke();ctx.fillText(String(y),15,py+4)}
+  const gap=12,bw=(w-gap*(data.length-1))/data.length;
+  data.forEach((x,i)=>{const v=x.val||0,bh=(v/4)*h,bx=pad+i*(bw+gap),by=pad+h-bh;ctx.fillStyle="#2f75b5";ctx.fillRect(bx,by,bw,bh);ctx.fillStyle="#26364a";ctx.textAlign="center";ctx.fillText(x.val!=null?x.val.toFixed(2):"–",bx+bw/2,by-7);ctx.save();ctx.translate(bx+bw/2,pad+h+12);ctx.rotate(-.45);ctx.fillText(x.name,0,0);ctx.restore()});
+  ctx.textAlign="left";
+}
+function drawLine(data){
+  const [c,ctx]=prepCanvas("lineChart"),pad=45,w=c.width-pad*2,h=c.height-pad*2;
+  ctx.font="12px Montserrat";ctx.fillStyle="#536174";ctx.strokeStyle="#dfe5ec";
+  for(let y=1;y<=4;y++){const py=pad+h-(y/4)*h;ctx.beginPath();ctx.moveTo(pad,py);ctx.lineTo(pad+w,py);ctx.stroke();ctx.fillText(String(y),15,py+4)}
+  if(!data.length)return;
+  const step=data.length>1?w/(data.length-1):0;
+  ctx.strokeStyle="#1f4e78";ctx.lineWidth=3;ctx.beginPath();
+  data.forEach((x,i)=>{const px=pad+i*step,py=pad+h-(x.value/4)*h;i?ctx.lineTo(px,py):ctx.moveTo(px,py)});
+  ctx.stroke();
+  data.forEach((x,i)=>{const px=pad+i*step,py=pad+h-(x.value/4)*h;ctx.fillStyle="#1f4e78";ctx.beginPath();ctx.arc(px,py,5,0,Math.PI*2);ctx.fill();ctx.fillStyle="#26364a";ctx.textAlign="center";ctx.fillText(x.value.toFixed(2),px,py-10);ctx.fillText(x.label,px,pad+h+20)});
+  ctx.textAlign="left";
+}
+
+document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>{
+  save();
+  document.querySelectorAll(".navbtn").forEach(x=>x.classList.remove("active"));b.classList.add("active");
+  document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));document.getElementById(b.dataset.panel).classList.add("active");
+  if(b.dataset.panel==="dashboardPanel")dashboard();
+});
+document.getElementById("criteriaBox").innerHTML=criteria.map(c=>`<div class="criterion"><b>${c[0]}</b><div class="small" style="margin-top:5px">${c[1]}</div></div>`).join("");
+document.getElementById("clearBtn").onclick=()=>{
+  if(confirm("¿Seguro que deseas borrar todos los datos guardados de esta página?")){
+    localStorage.removeItem(key);location.reload();
+  }
+};
+
+dateSelect.value=dates[0];studentSelect.value=students[0];renderEval();
+</script>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+}
+let deferredPrompt = null;
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const btn = document.getElementById("installAppBtn");
+  if (btn) btn.hidden = false;
+});
+window.addEventListener("appinstalled", () => {
+  const btn = document.getElementById("installAppBtn");
+  if (btn) btn.hidden = true;
+});
+</script>
+
+<script>
+(function(){
+  const btn = document.getElementById("installAppBtn");
+  if (btn) btn.addEventListener("click", async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    try { await deferredPrompt.userChoice; } catch(e) {}
+    deferredPrompt = null;
+    btn.hidden = true;
+  });
+})();
+</script>
+
+</body>
+</html>
