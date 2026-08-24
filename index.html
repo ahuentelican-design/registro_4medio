@@ -205,9 +205,9 @@ footer{text-align:center;padding:18px;font-size:.72rem;color:#6b7280}
     </div>
     <div class="metrics">
       <div class="metric"><span>Sesiones evaluadas</span><b id="mSessions">0</b></div>
-      <div class="metric"><span>Promedio general /4</span><b id="mAverage">–</b></div>
-      <div class="metric"><span>Mejor indicador</span><b id="mBest" style="font-size:1rem">–</b></div>
-      <div class="metric"><span>Indicador a reforzar</span><b id="mWeak" style="font-size:1rem">–</b></div>
+      <div class="metric"><span>Porcentaje de logro</span><b id="mAchievement">–</b></div>
+      <div class="metric"><span>Nivel de logro</span><b id="mLevel" style="font-size:1rem">–</b></div>
+      <div class="metric"><span>Calificación</span><b id="mGrade">–</b></div>
     </div>
   </div>
   <div class="grid2">
@@ -217,16 +217,16 @@ footer{text-align:center;padding:18px;font-size:.72rem;color:#6b7280}
       <div class="legend">Escala: 1 Inicial · 2 En desarrollo · 3 Logrado · 4 Destacado</div>
     </div>
     <div class="card">
-      <h3>Evolución del promedio por fecha</h3>
+      <h3>Evolución del porcentaje de logro por fecha</h3>
       <canvas id="lineChart" width="760" height="340"></canvas>
-      <div class="legend">El gráfico considera solo las sesiones que poseen al menos un indicador evaluado.</div>
+      <div class="legend">El gráfico considera solo sesiones evaluadas. 60% corresponde a calificación 4,0.</div>
     </div>
   </div>
   <div class="card">
     <h3>Historial del estudiante</h3>
     <div class="tablewrap">
       <table style="min-width:900px">
-        <thead><tr><th>Fecha</th><th>Promedio</th><th>Registro</th><th>Sesión</th><th>Carga</th><th>Vestimenta</th><th>Materiales</th><th>Seguridad</th><th>Autonomía</th><th>Observaciones</th></tr></thead>
+        <thead><tr><th>Fecha</th><th>% Logro</th><th>Calificación</th><th>Registro</th><th>Sesión</th><th>Carga</th><th>Vestimenta</th><th>Materiales</th><th>Seguridad</th><th>Autonomía</th><th>Observaciones</th></tr></thead>
         <tbody id="historyBody"></tbody>
       </table>
     </div>
@@ -239,7 +239,19 @@ footer{text-align:center;padding:18px;font-size:.72rem;color:#6b7280}
     <p class="small">Estos criterios corresponden al nivel máximo de logro esperado en cada indicador.</p>
     <div class="criteria" id="criteriaBox"></div>
   </div>
+  
   <div class="card">
+    <h3>Conversión de porcentaje a nivel de logro y calificación</h3>
+    <div class="criteria">
+      <div class="criterion"><b>Insatisfactorio</b><div class="small" style="margin-top:5px">0% a 39,9%</div></div>
+      <div class="criterion"><b>Por mejorar</b><div class="small" style="margin-top:5px">40% a 59,9%</div></div>
+      <div class="criterion"><b>En proceso</b><div class="small" style="margin-top:5px">60% a 79,9%</div></div>
+      <div class="criterion"><b>Adecuado</b><div class="small" style="margin-top:5px">80% a 100%</div></div>
+    </div>
+    <p class="small" style="margin-top:14px"><b>Escala de notas:</b> 0% = 1,0 · 60% = 4,0 · 100% = 7,0. La conversión es lineal bajo y sobre el 60% de exigencia.</p>
+  </div>
+
+<div class="card">
     <h3>Escala de apreciación</h3>
     <p><span class="badge">4 · Destacado</span> Cumple de forma autónoma, consistente y precisa.</p>
     <p><span class="badge">3 · Logrado</span> Cumple adecuadamente; requiere apoyos mínimos.</p>
@@ -304,6 +316,30 @@ function calc(scores){
   const vals=scores.map(Number).filter(v=>v>=1&&v<=4);
   return {total:vals.reduce((a,b)=>a+b,0), avg:vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:null, count:vals.length};
 }
+
+function achievementPercent(scores){
+  const vals=scores.map(Number).filter(v=>v>=1&&v<=4);
+  if(!vals.length) return null;
+  const obtained=vals.reduce((a,b)=>a+b,0);
+  const maximum=vals.length*4;
+  return (obtained/maximum)*100;
+}
+function achievementLevel(pct){
+  if(pct==null) return "–";
+  if(pct<40) return "Insatisfactorio";
+  if(pct<60) return "Por mejorar";
+  if(pct<80) return "En proceso";
+  return "Adecuado";
+}
+function gradeFromPercent(pct){
+  if(pct==null) return null;
+  pct=Math.max(0,Math.min(100,pct));
+  // Escala chilena con 60% de exigencia:
+  // 0% => 1,0 | 60% => 4,0 | 100% => 7,0
+  if(pct<=60) return 1 + (pct/60)*3;
+  return 4 + ((pct-60)/40)*3;
+}
+
 function renderEval(){
   const d=dateSelect.value||dates[0]; ensureDate(d);
   document.getElementById("sessionFocus").value=db[d].focus||"";
@@ -362,20 +398,24 @@ function dashboard(){
   const perDate=dates.map(d=>{const r=ensureStudentRecord(d,s),c=calc(r.scores);return {d,r,c}});
   const evaluated=perDate.filter(x=>x.c.count && !x.r.absent);
   document.getElementById("mSessions").textContent=evaluated.length;
-  document.getElementById("mAverage").textContent=evaluated.length?avg(evaluated.map(x=>x.c.avg)).toFixed(2):"–";
+  const sessionPcts=evaluated.map(x=>achievementPercent(x.r.scores)).filter(v=>v!=null);
+  const generalPct=sessionPcts.length?avg(sessionPcts):null;
+  document.getElementById("mAchievement").textContent=generalPct!=null?generalPct.toFixed(1)+"%":"–";
+  document.getElementById("mLevel").textContent=achievementLevel(generalPct);
+  const generalGrade=gradeFromPercent(generalPct);
+  document.getElementById("mGrade").textContent=generalGrade!=null?generalGrade.toFixed(1):"–";
   const inds=indicators.map((name,j)=>({name,val:avg(evaluated.map(x=>{const v=Number(x.r.scores[j]);return v||null}))}));
   const valid=inds.filter(x=>x.val!=null);
-  document.getElementById("mBest").textContent=valid.length?valid.reduce((a,b)=>a.val>=b.val?a:b).name:"–";
-  document.getElementById("mWeak").textContent=valid.length?valid.reduce((a,b)=>a.val<=b.val?a:b).name:"–";
   const hb=document.getElementById("historyBody");hb.innerHTML="";
   perDate.forEach(x=>{
     const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${fmtDate(x.d)}</td><td>${x.r.absent?"AUSENTE":(x.c.avg!=null?x.c.avg.toFixed(2):"")}</td>`+
+    const pct=achievementPercent(x.r.scores), gr=gradeFromPercent(pct);
+    tr.innerHTML=`<td>${fmtDate(x.d)}</td><td>${x.r.absent?"AUSENTE":(pct!=null?pct.toFixed(1)+"%":"")}</td><td>${x.r.absent?"AUSENTE":(gr!=null?gr.toFixed(1):"")}</td>`+
       x.r.scores.map(v=>`<td>${v||""}</td>`).join("")+`<td style="text-align:left">${x.r.obs||""}</td>`;
     hb.appendChild(tr);
   });
   drawBar(inds);
-  drawLine(evaluated.map(x=>({label:fmtDate(x.d).slice(0,5),value:x.c.avg})));
+  drawLine(evaluated.map(x=>({label:fmtDate(x.d).slice(0,5),value:achievementPercent(x.r.scores)})));
 }
 studentSelect.onchange=dashboard;
 
@@ -391,15 +431,28 @@ function drawBar(data){
   ctx.textAlign="left";
 }
 function drawLine(data){
-  const [c,ctx]=prepCanvas("lineChart"),pad=45,w=c.width-pad*2,h=c.height-pad*2;
+  const [c,ctx]=prepCanvas("lineChart"),pad=50,w=c.width-pad*2,h=c.height-pad*2;
   ctx.font="12px Montserrat";ctx.fillStyle="#536174";ctx.strokeStyle="#dfe5ec";
-  for(let y=1;y<=4;y++){const py=pad+h-(y/4)*h;ctx.beginPath();ctx.moveTo(pad,py);ctx.lineTo(pad+w,py);ctx.stroke();ctx.fillText(String(y),15,py+4)}
+  [0,20,40,60,80,100].forEach(y=>{
+    const py=pad+h-(y/100)*h;
+    ctx.beginPath();ctx.moveTo(pad,py);ctx.lineTo(pad+w,py);ctx.stroke();
+    ctx.fillText(y+"%",8,py+4);
+  });
   if(!data.length)return;
   const step=data.length>1?w/(data.length-1):0;
   ctx.strokeStyle="#1f4e78";ctx.lineWidth=3;ctx.beginPath();
-  data.forEach((x,i)=>{const px=pad+i*step,py=pad+h-(x.value/4)*h;i?ctx.lineTo(px,py):ctx.moveTo(px,py)});
+  data.forEach((x,i)=>{
+    const px=pad+i*step,py=pad+h-(x.value/100)*h;
+    i?ctx.lineTo(px,py):ctx.moveTo(px,py)
+  });
   ctx.stroke();
-  data.forEach((x,i)=>{const px=pad+i*step,py=pad+h-(x.value/4)*h;ctx.fillStyle="#1f4e78";ctx.beginPath();ctx.arc(px,py,5,0,Math.PI*2);ctx.fill();ctx.fillStyle="#26364a";ctx.textAlign="center";ctx.fillText(x.value.toFixed(2),px,py-10);ctx.fillText(x.label,px,pad+h+20)});
+  data.forEach((x,i)=>{
+    const px=pad+i*step,py=pad+h-(x.value/100)*h;
+    ctx.fillStyle="#1f4e78";ctx.beginPath();ctx.arc(px,py,5,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#26364a";ctx.textAlign="center";
+    ctx.fillText(x.value.toFixed(0)+"%",px,py-10);
+    ctx.fillText(x.label,px,pad+h+20)
+  });
   ctx.textAlign="left";
 }
 
