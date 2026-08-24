@@ -1,15 +1,19 @@
-PWA v2 – Modo Evaluador
-Novedades:
-- Selección de fecha y estudiante.
-- Botones grandes de nivel 1–4.
-- Opción ESTUDIANTE AUSENTE.
-- Guardado directo en la planilla de esa fecha.
-- Avance automático al siguiente estudiante.
-- Contadores de evaluados, ausentes y pendientes.
-- Planilla y Dashboard se mantienen.
+PWA v3 – Porcentaje de logro, nivel y calificación
 
-Para actualizar GitHub:
-1. Sube estos archivos reemplazando los anteriores.
-2. Haz Commit changes.
-3. Espera que GitHub Pages publique la nueva versión.
-4. En la tablet, cierra y vuelve a abrir la app instalada.
+Cambios:
+- Dashboard reemplaza Promedio general /4 por Porcentaje de logro.
+- Nivel de logro:
+  0–39,9% = Insatisfactorio
+  40–59,9% = Por mejorar
+  60–79,9% = En proceso
+  80–100% = Adecuado
+- Calificación:
+  0% = 1,0
+  60% = 4,0
+  100% = 7,0
+  Exigencia = 60%
+- Historial muestra % de logro y calificación por fecha.
+- Gráfico de evolución ahora trabaja de 0% a 100%.
+
+Para GitHub:
+Reemplaza los archivos existentes por estos y realiza Commit changes.
